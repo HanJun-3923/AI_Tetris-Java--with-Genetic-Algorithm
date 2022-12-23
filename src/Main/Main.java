@@ -1,9 +1,10 @@
 package Main;
 
-import TETRIS.Window;
 public class Main {
-    Window window;
+    public static AI.AI_Tetris AI = new AI.AI_Tetris();
     public static void main(String[] args) {
         new Window();
+        AI.gameStart();
+
     }
 }

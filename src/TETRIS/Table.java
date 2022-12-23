@@ -1,7 +1,10 @@
 package TETRIS;
 
 public class Table {
-    BlockShape mino;
-    boolean isVisible;
-    
+    public BlockShape mino;
+    public boolean isVisible;
+    public Table(BlockShape mino, boolean isVisible) {
+        this.mino = mino;
+        this.isVisible = isVisible;
+    }
 }

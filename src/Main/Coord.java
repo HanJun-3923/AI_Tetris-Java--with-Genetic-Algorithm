@@ -1,4 +1,4 @@
-package TETRIS;
+package Main;
 
 public class Coord {
     public int x;
