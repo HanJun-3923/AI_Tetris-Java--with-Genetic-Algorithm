@@ -9,12 +9,14 @@ import TETRIS.Position;
 import TETRIS.Table;
 
 import java.util.Vector;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
 public class AI_Tetris {
-    public class InformationBasedLocation extends Rule {
+    public class InformationBasedLocation {
         Position position;
         double cost;
         InformationBasedLocation() {
@@ -44,19 +46,19 @@ public class AI_Tetris {
         TimerTask putBlock = new TimerTask() {
             @Override
             public void run() {
-                System.out.println("Timer");
                 setBlock();
                 putBlock();
-                costVector.clear(); 
+                costVector.clear();
 
-                crntBlock.setBlockShape(nextBlock.list[numOfUsedBlocks % 7]);
+                crntBlock.setBlock(nextBlock.list[numOfUsedBlocks % 7]);
                 crntBlock.initPos();
                 crntBlock.upload(mainTable);
+
                 Window.paint.repaint();
             }
         };
-        
-        crntBlock.setBlockShape(nextBlock.list[numOfUsedBlocks % 7]);
+
+        crntBlock.setBlock(nextBlock.list[numOfUsedBlocks % 7]);
         crntBlock.initPos();
         crntBlock.upload(mainTable);
 
@@ -64,20 +66,17 @@ public class AI_Tetris {
     }
 
     private void setBlock() {
-        Rule rule = new Rule(); 
+        Rule rule = new Rule();
 
         crntBlock.moveMax(Direction.LEFT);
         crntBlock.moveMax(Direction.DOWN);
  
-        int n = 0; // test
         while(true) {
             InformationBasedLocation tempCost = new InformationBasedLocation();
             tempCost.cost = rule.getCost();
             tempCost.position.r = crntBlock.position.r;
             tempCost.position.c = crntBlock.position.c;
-            
-            System.out.println("costVector[" + n + "] = [" + tempCost.position.r + " " + tempCost.position.c + ", " + tempCost.cost + "]"); // test
-            n++; // test
+
             costVector.add(tempCost);
 
             crntBlock.moveMax(Direction.UP);
@@ -87,9 +86,10 @@ public class AI_Tetris {
                 continue;
             } else break;
         }
-
+        Collections.sort(costVector, new costComparator());
         crntBlock.position = costVector.get(0).position;
     }
+
 
 
     private void putBlock() {
@@ -131,5 +131,13 @@ public class AI_Tetris {
             return BlockShape.LIQUID;
         else
             return BlockShape.NONE;
+    }
+    class costComparator implements Comparator<InformationBasedLocation> {
+        public int compare(InformationBasedLocation cost1, InformationBasedLocation cost2) {
+            if (cost1.cost > cost2.cost) {
+                return 1;
+            } else if(cost1.cost == cost2.cost) return 0;
+            else return -1;
+        }
     }
 }

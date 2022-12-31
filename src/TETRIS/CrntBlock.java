@@ -27,7 +27,7 @@ public class CrntBlock {
         }
         setBlockArray();
     }
-    public void setBlockShape(BlockShape blockShape) {
+    public void setBlock(BlockShape blockShape) {
         this.blockShape = blockShape;
         setBlockArray();
     }
@@ -128,19 +128,14 @@ public class CrntBlock {
         }
     }
     public void moveMax(Direction direction) {
-        int n = 0; // test
         if(direction == Direction.LEFT) {
-            while(movable(direction)) { position.c--; n++; }
-            System.out.println("movaMax Left, number of movement = " + n); // test
+            while(movable(direction)) { position.c--; }
         } else if (direction == Direction.RIGHT) {
-            while(movable(direction)) { position.c++; n++; }
-            System.out.println("movaMax RIGHT, number of movement = " + n); // test
+            while(movable(direction)) { position.c++; }
         } else if (direction == Direction.DOWN) {
-            while(movable(direction)) { position.r++; n++; }
-            System.out.println("movaMax DOWN, number of movement = " + n); // test
+            while(movable(direction)) { position.r++; }
         } else if(direction == Direction.UP) {
-            while(movable(direction)) { position.r--; n++; }
-            System.out.println("movaMax UP, number of movement = " + n); // test
+            while(movable(direction)) { position.r--; }
         }
     }
     public void solidification() {
