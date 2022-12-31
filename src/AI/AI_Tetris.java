@@ -9,15 +9,25 @@ import TETRIS.Position;
 import TETRIS.Table;
 
 import java.util.Vector;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class AI_Tetris {
+    public class InformationBasedLocation extends Rule {
+        Position position;
+        double cost;
+        InformationBasedLocation() {
+            position = new Position(0, 0);
+        }
+    }
+    
     public Table[][] mainTable = new Table[Window.AI_MainBoard.heightInt][Window.AI_MainBoard.widthInt];
     
-    private CrntBlock crntBlock = new CrntBlock();
-    private NextBlock nextBlock = new NextBlock();
+    protected CrntBlock crntBlock = new CrntBlock();
+    protected NextBlock nextBlock = new NextBlock();
     private int numOfUsedBlocks = 0;
-    private Vector<Cost> costVector = new Vector<Cost>();
+    private Vector<InformationBasedLocation> costVector = new Vector<InformationBasedLocation>();
 
     public AI_Tetris() {
         // 객체 할당
@@ -30,31 +40,79 @@ public class AI_Tetris {
 
     // **** Main Logic Function ****
     public void gameStart() {
+        Timer timer = new Timer();
+        TimerTask putBlock = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Timer");
+                setBlock();
+                putBlock();
+                costVector.clear(); 
+
+                crntBlock.setBlockShape(nextBlock.list[numOfUsedBlocks % 7]);
+                crntBlock.initPos();
+                crntBlock.upload(mainTable);
+                Window.paint.repaint();
+            }
+        };
+        
         crntBlock.setBlockShape(nextBlock.list[numOfUsedBlocks % 7]);
         crntBlock.initPos();
         crntBlock.upload(mainTable);
-        
-        putBlock();
+
+        timer.scheduleAtFixedRate(putBlock, 1000, 1000);
     }
 
-    private void putBlock() {
+    private void setBlock() {
+        Rule rule = new Rule(); 
+
         crntBlock.moveMax(Direction.LEFT);
         crntBlock.moveMax(Direction.DOWN);
-        
-        costVector.clear();
-        costVector.add(getCost());
-        getCost();
+ 
+        int n = 0; // test
+        while(true) {
+            InformationBasedLocation tempCost = new InformationBasedLocation();
+            tempCost.cost = rule.getCost();
+            tempCost.position.r = crntBlock.position.r;
+            tempCost.position.c = crntBlock.position.c;
+            
+            System.out.println("costVector[" + n + "] = [" + tempCost.position.r + " " + tempCost.position.c + ", " + tempCost.cost + "]"); // test
+            n++; // test
+            costVector.add(tempCost);
 
+            crntBlock.moveMax(Direction.UP);
+            if(crntBlock.movable(Direction.RIGHT)) {
+                crntBlock.move(Direction.RIGHT);
+                crntBlock.moveMax(Direction.DOWN);
+                continue;
+            } else break;
+        }
 
+        crntBlock.position = costVector.get(0).position;
     }
 
-    private Cost getCost() {
-        Cost resultCost = new Cost();
-        
 
-        return resultCost;
+    private void putBlock() {
+        crntBlock.solidification();
+        crntBlock.upload(mainTable);
+        numOfUsedBlocks++;
+        // lineClear();
+
+        if(numOfUsedBlocks % NextBlock.BAG == 0) nextBlock.setNextArray();
+        clearLiquidBlock();
+
     }
-
+    private void clearLiquidBlock() {
+        for(int r = 0; r < 20; r ++) {
+            for (int c = 0; c < 10; c++) {
+                Position testPos = new Position(r, c);
+                if(getMainTableBlockType(testPos) == BlockShape.LIQUID) {
+                    mainTable[r][c].mino = BlockShape.NONE;
+                    mainTable[r][c].isVisible = false;
+                }
+            }
+        }
+    }
     public BlockShape getMainTableBlockType(Position testPos) {
         // 테트리스 화면 밖 모든 블럭은 Solid 블록이다.
 

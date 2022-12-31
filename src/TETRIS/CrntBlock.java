@@ -1,17 +1,13 @@
 package TETRIS;
 
-import Main.Coord;
-import Main.Window;
 import Main.Main;
 
 public class CrntBlock {
-    protected BlockShape[][] blockArray = new BlockShape[4][4];
-    protected BlockShape blockShape = BlockShape.NONE;
-    protected int rotation = 0;
+    public BlockShape[][] blockArray = new BlockShape[4][4];
+    public BlockShape blockShape = BlockShape.NONE;
+    public int rotation = 0;
     protected Position INITIAL_POS = new Position(0, 3);
-    protected Position position = new Position(INITIAL_POS.r, INITIAL_POS.c);
-
-
+    public Position position = new Position(INITIAL_POS.r, INITIAL_POS.c);
 
     public CrntBlock() {
         for(int r = 0; r < 4; r++) {
@@ -49,11 +45,10 @@ public class CrntBlock {
     public void upload(Table[][] mainTable) {
         for(int r = 0; r < 4; r++) {
             for(int c = 0; c < 4; c++) {
-                mainTable[position.r + r][position.c + c].mino = blockArray[r][c];
-                if(blockArray[r][c] != BlockShape.NONE)
+                if(blockArray[r][c] != BlockShape.NONE) {
+                    mainTable[position.r + r][position.c + c].mino = blockArray[r][c];
                     mainTable[position.r + r][position.c + c].isVisible = true;
-                else
-                    mainTable[position.r + r][position.c + c].isVisible = false;
+                }
             }
         }
     }
@@ -133,14 +128,40 @@ public class CrntBlock {
         }
     }
     public void moveMax(Direction direction) {
+        int n = 0; // test
         if(direction == Direction.LEFT) {
-            while(movable(direction)) position.c--;
+            while(movable(direction)) { position.c--; n++; }
+            System.out.println("movaMax Left, number of movement = " + n); // test
         } else if (direction == Direction.RIGHT) {
-            while(movable(direction)) position.c++;
+            while(movable(direction)) { position.c++; n++; }
+            System.out.println("movaMax RIGHT, number of movement = " + n); // test
         } else if (direction == Direction.DOWN) {
-            while(movable(direction)) position.r++;
+            while(movable(direction)) { position.r++; n++; }
+            System.out.println("movaMax DOWN, number of movement = " + n); // test
         } else if(direction == Direction.UP) {
-            while(movable(direction)) position.r--;
+            while(movable(direction)) { position.r--; n++; }
+            System.out.println("movaMax UP, number of movement = " + n); // test
+        }
+    }
+    public void solidification() {
+        // change liquid blocks into solid blocks
+        BlockShape solidBlockShape; // 변경될 solid 블록
+        
+        if(blockShape == BlockShape.I) solidBlockShape = BlockShape.SLD_I;
+        else if(blockShape == BlockShape.T) solidBlockShape = BlockShape.SLD_T;
+        else if(blockShape == BlockShape.O) solidBlockShape = BlockShape.SLD_O;
+        else if(blockShape == BlockShape.S) solidBlockShape = BlockShape.SLD_S;
+        else if(blockShape == BlockShape.Z) solidBlockShape = BlockShape.SLD_Z;
+        else if(blockShape == BlockShape.L) solidBlockShape = BlockShape.SLD_L;
+        else solidBlockShape = BlockShape.SLD_J;
+
+        // solidification
+        for(int r = 0; r < 4; r++) {
+            for(int c = 0; c < 4; c++) {
+                if(blockArray[r][c] == blockShape) {
+                    blockArray[r][c] = solidBlockShape;
+                }
+            }
         }
     }
 }
