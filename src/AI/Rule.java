@@ -5,8 +5,6 @@ import TETRIS.Position;
 import TETRIS.Table;
 import TETRIS.CrntBlock;
 
-import java.security.DomainCombiner;
-
 import Main.Main;
 import Main.Window;
 

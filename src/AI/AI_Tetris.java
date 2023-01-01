@@ -33,6 +33,8 @@ public class AI_Tetris {
     private int numOfUsedBlocks = 0;
     private Vector<InformationBasedLocation> costVector = new Vector<InformationBasedLocation>();
 
+    private double PPS = 5.0;
+
     public AI_Tetris() {
         // 객체 할당
         for(int r = 0; r < Window.AI_MainBoard.heightInt; r++) {
@@ -66,7 +68,8 @@ public class AI_Tetris {
         crntBlock.setRotation(0);
         crntBlock.upload(mainTable);
 
-        timer.scheduleAtFixedRate(putBlock, 1000, 1000);
+        long delay = (long) ((1.0 / PPS) * 1000);
+        timer.scheduleAtFixedRate(putBlock, delay, delay);
     }
 
     private void setBlock() {
@@ -103,19 +106,18 @@ public class AI_Tetris {
         crntBlock.setBlock(crntBlock.blockShape);
     }
 
-
-
     private void putBlock() {
         crntBlock.solidification();
         crntBlock.upload(mainTable);
         numOfUsedBlocks++;
-        // lineClear();
+        lineClear();
 
         if(numOfUsedBlocks % NextBlock.BAG == 0) nextBlock.setNextArray();
         clearLiquidBlock();
         crntBlock.setRotation(0);
 
     }
+    
     private void clearLiquidBlock() {
         for(int r = 0; r < 20; r ++) {
             for (int c = 0; c < 10; c++) {
@@ -147,11 +149,36 @@ public class AI_Tetris {
         else
             return BlockShape.NONE;
     }
+    private void lineClear() {
+        for(int r = 0; r < Main.Window.AI_MainBoard.heightInt; r++) {
+            if(isLineFull(r)) { // 라인이 다 찼다면
+                for(int upperRow = r - 1; upperRow >= 0; upperRow--) { // upperRow + 1 로 인해 MAIN_BOARD.INT_HEIGHT - 1 까지 반복
+                    for(int c = 0; c < Main.Window.AI_MainBoard.widthInt; c++) {
+                        mainTable[upperRow + 1][c].mino = mainTable[upperRow][c].mino;
+                        mainTable[upperRow + 1][c].isVisible = mainTable[upperRow][c].isVisible;
+                        if(upperRow == 0) {
+                            mainTable[upperRow][c].mino = BlockShape.NONE;
+                            mainTable[upperRow][c].isVisible = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private boolean isLineFull(int r) {
+        for(int c = 0; c < Main.Window.AI_MainBoard.widthInt; c++) {
+            // 하나라도 블럭이 비었다면 return false
+            if(mainTable[r][c].isVisible == false) return false; 
+        }
+        // 모두 블럭이 차있으므로 return true
+        return true;
+    }
     class costComparator implements Comparator<InformationBasedLocation> {
         public int compare(InformationBasedLocation cost1, InformationBasedLocation cost2) {
             if (cost1.cost > cost2.cost) {
                 return 1;
-            } else if(cost1.cost == cost2.cost) return 0;
+            } 
+            else if(cost1.cost == cost2.cost) return 0;
             else return -1;
         }
     }
