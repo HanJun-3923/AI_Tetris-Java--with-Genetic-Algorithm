@@ -6,7 +6,7 @@ public class CrntBlock {
     public BlockShape[][] blockArray = new BlockShape[4][4];
     public BlockShape blockShape = BlockShape.NONE;
     public int rotation = 0;
-    protected Position INITIAL_POS = new Position(0, 3);
+    protected Position INITIAL_POS = new Position(1, 3);
     public Position position = new Position(INITIAL_POS.r, INITIAL_POS.c);
 
     public CrntBlock() {

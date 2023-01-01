@@ -19,6 +19,8 @@ public class AI_Tetris {
     public class InformationBasedLocation {
         Position position;
         double cost;
+        int rotation;
+
         InformationBasedLocation() {
             position = new Position(0, 0);
         }
@@ -52,6 +54,7 @@ public class AI_Tetris {
 
                 crntBlock.setBlock(nextBlock.list[numOfUsedBlocks % 7]);
                 crntBlock.initPos();
+                crntBlock.setRotation(0);
                 crntBlock.upload(mainTable);
 
                 Window.paint.repaint();
@@ -60,6 +63,7 @@ public class AI_Tetris {
 
         crntBlock.setBlock(nextBlock.list[numOfUsedBlocks % 7]);
         crntBlock.initPos();
+        crntBlock.setRotation(0);
         crntBlock.upload(mainTable);
 
         timer.scheduleAtFixedRate(putBlock, 1000, 1000);
@@ -68,26 +72,35 @@ public class AI_Tetris {
     private void setBlock() {
         Rule rule = new Rule();
 
-        crntBlock.moveMax(Direction.LEFT);
-        crntBlock.moveMax(Direction.DOWN);
- 
-        while(true) {
-            InformationBasedLocation tempCost = new InformationBasedLocation();
-            tempCost.cost = rule.getCost();
-            tempCost.position.r = crntBlock.position.r;
-            tempCost.position.c = crntBlock.position.c;
+        for(int rot = 0; rot < 4; rot++) {
+            crntBlock.setRotation(rot);
+            crntBlock.setBlock(crntBlock.blockShape);
 
-            costVector.add(tempCost);
+            crntBlock.moveMax(Direction.LEFT);
+            crntBlock.moveMax(Direction.DOWN);
+            
+            while(true) {
+                InformationBasedLocation tempCost = new InformationBasedLocation();
+                tempCost.cost = rule.getCost();
+                tempCost.position.r = crntBlock.position.r;
+                tempCost.position.c = crntBlock.position.c;
+                tempCost.rotation = rot;
 
-            crntBlock.moveMax(Direction.UP);
-            if(crntBlock.movable(Direction.RIGHT)) {
-                crntBlock.move(Direction.RIGHT);
-                crntBlock.moveMax(Direction.DOWN);
-                continue;
-            } else break;
+                costVector.add(tempCost);
+
+                crntBlock.moveMax(Direction.UP);
+                if(crntBlock.movable(Direction.RIGHT)) {
+                    crntBlock.move(Direction.RIGHT);
+                    crntBlock.moveMax(Direction.DOWN);
+                    continue;
+                } else break;
+            }
+            crntBlock.initPos();
         }
         Collections.sort(costVector, new costComparator());
+        crntBlock.setRotation(costVector.get(0).rotation);
         crntBlock.position = costVector.get(0).position;
+        crntBlock.setBlock(crntBlock.blockShape);
     }
 
 
@@ -100,6 +113,7 @@ public class AI_Tetris {
 
         if(numOfUsedBlocks % NextBlock.BAG == 0) nextBlock.setNextArray();
         clearLiquidBlock();
+        crntBlock.setRotation(0);
 
     }
     private void clearLiquidBlock() {
@@ -109,6 +123,7 @@ public class AI_Tetris {
                 if(getMainTableBlockType(testPos) == BlockShape.LIQUID) {
                     mainTable[r][c].mino = BlockShape.NONE;
                     mainTable[r][c].isVisible = false;
+
                 }
             }
         }
