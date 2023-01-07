@@ -27,13 +27,14 @@ public class AI_Tetris {
     }
     
     public Table[][] mainTable = new Table[Window.AI_MainBoard.heightInt][Window.AI_MainBoard.widthInt];
-    
-    protected CrntBlock crntBlock = new CrntBlock();
+    public GameState gameState = GameState.GAME_RESUME;
+
+    protected CrntBlock crntBlock = new CrntBlock(this);
     protected NextBlock nextBlock = new NextBlock();
     private int numOfUsedBlocks = 0;
     private Vector<InformationBasedLocation> costVector = new Vector<InformationBasedLocation>();
 
-    private double PPS = 5.0;
+    public double PPS = 50;
 
     public AI_Tetris() {
         // 객체 할당
@@ -57,24 +58,29 @@ public class AI_Tetris {
                 crntBlock.setBlock(nextBlock.list[numOfUsedBlocks % 7]);
                 crntBlock.initPos();
                 crntBlock.setRotation(0);
-                crntBlock.upload(mainTable);
 
-                Window.paint.repaint();
+                if(isGameOver()) {
+                    gameState = GameState.GAME_OVER;
+                    Window.paint.repaint();
+                    timer.cancel();
+                }
+                else {
+                    upload();
+                    Window.paint.repaint();
+                }
             }
         };
 
         crntBlock.setBlock(nextBlock.list[numOfUsedBlocks % 7]);
         crntBlock.initPos();
         crntBlock.setRotation(0);
-        crntBlock.upload(mainTable);
+        upload();
 
         long delay = (long) ((1.0 / PPS) * 1000);
         timer.scheduleAtFixedRate(putBlock, delay, delay);
     }
-
+    
     private void setBlock() {
-        Rule rule = new Rule();
-
         for(int rot = 0; rot < 4; rot++) {
             crntBlock.setRotation(rot);
             crntBlock.setBlock(crntBlock.blockShape);
@@ -84,7 +90,11 @@ public class AI_Tetris {
             
             while(true) {
                 InformationBasedLocation tempCost = new InformationBasedLocation();
+                
+                Rule rule = new Rule(mainTable, crntBlock);
                 tempCost.cost = rule.getCost();
+                // if(numOfUsedBlocks != 0) 
+                //      try { Thread.sleep(5000); } catch (InterruptedException e) { e.printStackTrace(); }
                 tempCost.position.r = crntBlock.position.r;
                 tempCost.position.c = crntBlock.position.c;
                 tempCost.rotation = rot;
@@ -108,7 +118,7 @@ public class AI_Tetris {
 
     private void putBlock() {
         crntBlock.solidification();
-        crntBlock.upload(mainTable);
+        upload();
         numOfUsedBlocks++;
         lineClear();
 
@@ -138,11 +148,11 @@ public class AI_Tetris {
             return BlockShape.SOLID; 
         
         BlockShape mino = mainTable[testPos.r][testPos.c].mino;
-        return getBlockType(mino);
+        BlockShape result = getBlockType(mino);
+        return result;
     }
     public BlockShape getBlockType(BlockShape mino) {
-        if (mino == BlockShape.NONE) return BlockShape.NONE;
-        else if(mino == BlockShape.SLD_I || mino == BlockShape.SLD_J || mino == BlockShape.SLD_L || mino == BlockShape.SLD_O || mino == BlockShape.SLD_S || mino == BlockShape.SLD_J || mino == BlockShape.SLD_T || mino == BlockShape.SLD_Z)
+        if(mino == BlockShape.SLD_I || mino == BlockShape.SLD_J || mino == BlockShape.SLD_L || mino == BlockShape.SLD_O || mino == BlockShape.SLD_S || mino == BlockShape.SLD_J || mino == BlockShape.SLD_T || mino == BlockShape.SLD_Z)
             return BlockShape.SOLID;
         else if(mino == BlockShape.I || mino == BlockShape.J || mino == BlockShape.L || mino == BlockShape.O || mino == BlockShape.S || mino == BlockShape.J || mino == BlockShape.T || mino == BlockShape.Z)
             return BlockShape.LIQUID;
@@ -165,6 +175,16 @@ public class AI_Tetris {
             }
         }
     }
+    private void upload() {
+        for(int r = 0; r < 4; r++) {
+            for(int c = 0; c < 4; c++) {
+                if(crntBlock.blockArray[r][c] != BlockShape.NONE) {
+                    mainTable[crntBlock.position.r + r][crntBlock.position.c + c].mino = crntBlock.blockArray[r][c];
+                    mainTable[crntBlock.position.r + r][crntBlock.position.c + c].isVisible = true;
+                }
+            }
+        }
+    }
     private boolean isLineFull(int r) {
         for(int c = 0; c < Main.Window.AI_MainBoard.widthInt; c++) {
             // 하나라도 블럭이 비었다면 return false
@@ -173,6 +193,18 @@ public class AI_Tetris {
         // 모두 블럭이 차있으므로 return true
         return true;
     }
+    private boolean isGameOver() {
+        for(int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) {
+                if(crntBlock.blockArray[r][c] != BlockShape.NONE) {
+                    if(mainTable[r + crntBlock.position.r][c + crntBlock.position.c].isVisible == true) return true;
+                    else continue;
+                }
+            }
+        }
+        return false;
+    }
+    
     class costComparator implements Comparator<InformationBasedLocation> {
         public int compare(InformationBasedLocation cost1, InformationBasedLocation cost2) {
             if (cost1.cost > cost2.cost) {

@@ -1,6 +1,6 @@
 package TETRIS;
 
-import Main.Main;
+import Main.Play;
 
 public class CrntBlock {
     public BlockShape[][] blockArray = new BlockShape[4][4];
@@ -8,8 +8,10 @@ public class CrntBlock {
     public int rotation = 0;
     protected Position INITIAL_POS = new Position(1, 3);
     public Position position = new Position(INITIAL_POS.r, INITIAL_POS.c);
+    private AI.AI_Tetris ai;
 
-    public CrntBlock() {
+    public CrntBlock(AI.AI_Tetris ai) {
+        this.ai = ai;
         for(int r = 0; r < 4; r++) {
             for(int c = 0; c < 4; c++) {
                 blockArray[r][c] = BlockShape.NONE;
@@ -42,16 +44,6 @@ public class CrntBlock {
             }
         }
     }
-    public void upload(Table[][] mainTable) {
-        for(int r = 0; r < 4; r++) {
-            for(int c = 0; c < 4; c++) {
-                if(blockArray[r][c] != BlockShape.NONE) {
-                    mainTable[position.r + r][position.c + c].mino = blockArray[r][c];
-                    mainTable[position.r + r][position.c + c].isVisible = true;
-                }
-            }
-        }
-    }
     public void initPos() {
         position.r = INITIAL_POS.r;
         position.c = INITIAL_POS.c;
@@ -62,7 +54,7 @@ public class CrntBlock {
                 for (int c = 0; c < 4; c++) {
                     if(blockArray[r][c] == blockShape) { // 4x4 행렬 속에서 블럭이 존재할 때
                         Position testPos = new Position(r + position.r, c + position.c - 1);
-                        BlockShape testResult = Main.AI.getMainTableBlockType(testPos);
+                        BlockShape testResult = ai.getMainTableBlockType(testPos);
                         if(testResult == BlockShape.SOLID) return false;
                     }
                 }
@@ -73,7 +65,7 @@ public class CrntBlock {
                 for (int c = 0; c < 4; c++) {
                     if(blockArray[r][c] == blockShape) { // 4x4 행렬 속에서 블럭이 존재할 때
                         Position testPos = new Position(r + position.r, c + position.c + 1);
-                        BlockShape testResult = Main.AI.getMainTableBlockType(testPos);
+                        BlockShape testResult = ai.getMainTableBlockType(testPos);
                         if(testResult == BlockShape.SOLID) return false;
                     }
                 }
@@ -84,7 +76,7 @@ public class CrntBlock {
                 for (int c = 0; c < 4; c++) {
                     if(blockArray[r][c] == blockShape) { // 4x4 행렬 속에서 블럭이 존재할 때
                         Position testPos = new Position(r + position.r + 1, c + position.c);
-                        BlockShape testResult = Main.AI.getMainTableBlockType(testPos);
+                        BlockShape testResult = ai.getMainTableBlockType(testPos);
                         if(testResult == BlockShape.SOLID) return false;
                     }
                 }
@@ -95,7 +87,7 @@ public class CrntBlock {
                 for (int c = 0; c < 4; c++) {
                     if(blockArray[r][c] == blockShape) { // 4x4 행렬 속에서 블럭이 존재할 때
                         Position testPos = new Position(r + position.r - 1, c + position.c);
-                        BlockShape testResult = Main.AI.getMainTableBlockType(testPos);
+                        BlockShape testResult = ai.getMainTableBlockType(testPos);
                         if(testResult == BlockShape.SOLID) return false;
                     }
                 }
@@ -106,7 +98,7 @@ public class CrntBlock {
                 for (int c = 0; c < 4; c++) {
                     if(blockArray[r][c] == blockShape) { // 4x4 행렬 속에서 블럭이 존재할 때
                         Position testPos = new Position(r + position.r, c + position.c);
-                        BlockShape testResult = Main.AI.getMainTableBlockType(testPos);
+                        BlockShape testResult = ai.getMainTableBlockType(testPos);
                         if(testResult == BlockShape.SOLID) return false;
                     }
                 }

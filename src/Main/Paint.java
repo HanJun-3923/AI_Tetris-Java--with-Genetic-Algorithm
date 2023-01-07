@@ -1,24 +1,43 @@
 package Main;
 import javax.swing.JPanel;
 
-import java.awt.Graphics;
-import java.awt.Color;
+import AI.GameState;
 import TETRIS.BlockShape;
 
-public class Paint extends JPanel {
-    
+import java.awt.Graphics;
+import java.awt.Color;
+
+public class Paint extends JPanel { 
+    public static final int WIDTH = 800;
+    public static final int HEIGHT = 600;
+
+    public AI.AI_Tetris ai;
+
+    Paint() {
+        setSize(WIDTH, HEIGHT);
+        setBackground(getBackground());
+        
+    }
+
     @Override
     public void paint(Graphics g) {
         super.paintComponent(g);
         paintBlock(g);
         paintGrid(g);
+
+        if(ai.gameState == GameState.GAME_OVER) {
+            // gameOverText(g);
+        }
     }   
+    
+    public void setAI(AI.AI_Tetris ai) {
+        this.ai = ai;
+    }
 
     @Override
     public void update(Graphics g) {
         paint(g);
     }
-
     private void paintGrid(Graphics g) { 
         g.setColor(Color.BLACK);
 
@@ -33,12 +52,11 @@ public class Paint extends JPanel {
             g.drawLine(Window.AI_MainBoard.coord.x, Window.AI_MainBoard.coord.y + i * (Window.AI_MainBoard.heightPixel / 20), Window.AI_MainBoard.coord.x + Window.AI_MainBoard.widthPixel, Window.AI_MainBoard.coord.y + i * (Window.AI_MainBoard.heightPixel / 20));
         }
     }
-
     private void paintBlock(Graphics g) {
         for (int r = 0; r < Window.AI_MainBoard.heightInt; r++) {
             for (int c = 0; c < Window.AI_MainBoard.widthInt; c++) {
-                if(Main.AI.mainTable[r][c].isVisible) { // 블럭이 존재한다면
-                    setColorAccordingToMino(g, Main.AI.mainTable[r][c].mino); // Set Graphcis Color according to Table's mino
+                if(ai.mainTable[r][c].isVisible) { // 블럭이 존재한다면
+                    setColorAccordingToMino(g, ai.mainTable[r][c].mino); // Set Graphcis Color according to Table's mino
                 } else { // 블럭이 존재하지 않는다면
                     g.setColor(Color.WHITE);
                 }
@@ -46,8 +64,12 @@ public class Paint extends JPanel {
             }
         }
     }
-
-    // Set Graphcis Color according to Table's mino
+    private void gameOverText(Graphics g) {
+        int width = 600;
+        int height = 300;
+        g.setColor(Color.WHITE);
+        g.fillRect((WIDTH / 2) - (width / 2), (HEIGHT / 2) - (height / 2), width, height);
+    }
     private void setColorAccordingToMino(Graphics g, BlockShape mino) {
         // Color Profile from Jstris
 
