@@ -1,0 +1,2 @@
+heightWeight: 100
+doMakeHoleWeight: 500

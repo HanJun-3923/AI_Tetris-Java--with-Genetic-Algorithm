@@ -10,10 +10,12 @@ public class Rule {
     Table[][] mainTable;
     CrntBlock crntBlock;
     AI_Tetris ai = Window.ai;
-
-    Rule(Table[][] mainTable, CrntBlock crntBlock) {
+    Weight weight;
+    
+    Rule(Table[][] mainTable, CrntBlock crntBlock, Weight weight) {
         this.mainTable = mainTable;
         this.crntBlock = crntBlock;
+        this.weight = weight;
     }
 
     public double getCost() {
@@ -25,7 +27,7 @@ public class Rule {
     }
 
     private double heightCost() {
-        final double heightWeight = 1;
+        final double heightWeight = weight.heightWeight;
         double cost = 0;
         for(int r = 0; r < 4; r++) {
             for(int c = 0; c < 4; c++) {
@@ -39,7 +41,7 @@ public class Rule {
     }
 
     private double doMakeHole() {
-        final double doMakeHole = 500;
+        final double doMakeHole = weight.doMakeHoleWeight;
         int deepOfHole = 0;
         double cost = 0;
         for(int r = 0; r < 4; r++) {

@@ -13,7 +13,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Timer;
 import java.util.TimerTask;
-
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 public class AI_Tetris {
     public class InformationBasedLocation {
@@ -25,17 +26,44 @@ public class AI_Tetris {
             position = new Position(0, 0);
         }
     }
-    
+    public static class Score {
+        public static final int Single = 100;
+        public static final int Double = 300;
+        public static final int Triple = 500;
+        public static final int Tetris = 800;
+        public static final int T_Spin_Mini_no_lines = 100;
+        public static final int T_Spin_Mini_Single = 200;
+        public static final int T_Spin_no_lines = 400;
+        public static final int T_Spin_Single = 800;
+        public static final int T_Spin_Double = 1200;
+        public static final int T_Spin_Triple = 1600;
+        public static final int Combo = 50;
+        public static final int Hard_drop_per_cell = 2;
+        public static final int Sofr_drop_per_cell = 1;
+    }
+
     public Table[][] mainTable = new Table[Window.AI_MainBoard.heightInt][Window.AI_MainBoard.widthInt];
     public GameState gameState = GameState.GAME_RESUME;
+    public long score = 0;
+    public double PPS = 50;
+    public int numOfUsedBlocks = 0;
 
     protected CrntBlock crntBlock = new CrntBlock(this);
     protected NextBlock nextBlock = new NextBlock();
-    private int numOfUsedBlocks = 0;
+    private Weight weight;
     private Vector<InformationBasedLocation> costVector = new Vector<InformationBasedLocation>();
 
-    public double PPS = 50;
 
+    public AI_Tetris(Weight weight) {
+        // 객체 할당
+        for(int r = 0; r < Window.AI_MainBoard.heightInt; r++) {
+            for(int c = 0; c < Window.AI_MainBoard.widthInt; c++) {
+                mainTable[r][c] = new Table(BlockShape.NONE, false);
+            }
+        }
+        this.weight = weight;
+        
+    }
     public AI_Tetris() {
         // 객체 할당
         for(int r = 0; r < Window.AI_MainBoard.heightInt; r++) {
@@ -43,8 +71,37 @@ public class AI_Tetris {
                 mainTable[r][c] = new Table(BlockShape.NONE, false);
             }
         }
+        weight = getWeight();
     }
+    private Weight getWeight() {
+        try {
+        Weight weight = new Weight();
 
+        String filePath = "src/PlayData/PlayData.txt";
+        BufferedReader input = new BufferedReader(new FileReader(filePath));
+        
+        String str = input.readLine();
+        int[] tempArray = new int[weight.numberOfWeight];
+        for(int n = 0; n < weight.numberOfWeight; n++) {
+            for(int i = 0; i < str.length(); i++) {
+                if(str.charAt(i) == ':') {
+                    String stringNum = "";
+                    for(int j = i + 2; j < str.length(); j++) {
+                        stringNum += str.charAt(j);
+                    }
+                    tempArray[n] = Integer.parseInt(stringNum);
+                    break;
+                }
+            }
+        }
+        input.close();
+
+        weight.heightWeight = tempArray[0];
+        weight.doMakeHoleWeight = tempArray[1];
+
+        return weight;
+        } catch (Exception e) { e.getStackTrace(); return null; }
+    }
     // **** Main Logic Function ****
     public void gameStart() {
         Timer timer = new Timer();
@@ -91,7 +148,7 @@ public class AI_Tetris {
             while(true) {
                 InformationBasedLocation tempCost = new InformationBasedLocation();
                 
-                Rule rule = new Rule(mainTable, crntBlock);
+                Rule rule = new Rule(mainTable, crntBlock, weight);
                 tempCost.cost = rule.getCost();
                 // if(numOfUsedBlocks != 0) 
                 //      try { Thread.sleep(5000); } catch (InterruptedException e) { e.printStackTrace(); }
@@ -120,6 +177,7 @@ public class AI_Tetris {
         crntBlock.solidification();
         upload();
         numOfUsedBlocks++;
+        score += Score.Hard_drop_per_cell * (crntBlock.position.r - 1);
         lineClear();
 
         if(numOfUsedBlocks % NextBlock.BAG == 0) nextBlock.setNextArray();
@@ -160,8 +218,10 @@ public class AI_Tetris {
             return BlockShape.NONE;
     }
     private void lineClear() {
+        int removedLine = 0;
         for(int r = 0; r < Main.Window.AI_MainBoard.heightInt; r++) {
             if(isLineFull(r)) { // 라인이 다 찼다면
+                removedLine++;
                 for(int upperRow = r - 1; upperRow >= 0; upperRow--) { // upperRow + 1 로 인해 MAIN_BOARD.INT_HEIGHT - 1 까지 반복
                     for(int c = 0; c < Main.Window.AI_MainBoard.widthInt; c++) {
                         mainTable[upperRow + 1][c].mino = mainTable[upperRow][c].mino;
@@ -174,6 +234,11 @@ public class AI_Tetris {
                 }
             }
         }
+        if(removedLine == 1) score += Score.Single;
+        else if(removedLine == 2) score += Score.Double;
+        else if(removedLine == 3) score += Score.Triple;
+        else if(removedLine == 4) score += Score.Tetris;
+
     }
     private void upload() {
         for(int r = 0; r < 4; r++) {
