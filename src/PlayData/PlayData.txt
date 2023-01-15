@@ -1,2 +1,2 @@
-heightWeight: 100
-doMakeHoleWeight: 500
+heightWeight: 10339
+doMakeHoleWeight: 50622

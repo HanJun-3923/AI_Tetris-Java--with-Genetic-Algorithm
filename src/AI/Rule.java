@@ -10,7 +10,7 @@ public class Rule {
     Table[][] mainTable;
     CrntBlock crntBlock;
     AI_Tetris ai = Window.ai;
-    Weight weight;
+    Weight weight = new Weight();
     
     Rule(Table[][] mainTable, CrntBlock crntBlock, Weight weight) {
         this.mainTable = mainTable;

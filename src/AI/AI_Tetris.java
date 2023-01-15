@@ -27,24 +27,24 @@ public class AI_Tetris {
         }
     }
     public static class Score {
-        public static final int Single = 100;
-        public static final int Double = 300;
-        public static final int Triple = 500;
-        public static final int Tetris = 800;
-        public static final int T_Spin_Mini_no_lines = 100;
-        public static final int T_Spin_Mini_Single = 200;
-        public static final int T_Spin_no_lines = 400;
-        public static final int T_Spin_Single = 800;
-        public static final int T_Spin_Double = 1200;
-        public static final int T_Spin_Triple = 1600;
-        public static final int Combo = 50;
-        public static final int Hard_drop_per_cell = 2;
-        public static final int Sofr_drop_per_cell = 1;
+        public static final double Single = 100;
+        public static final double Double = 300;
+        public static final double Triple = 500;
+        public static final double Tetris = 800;
+        public static final double T_Spin_Mini_no_lines = 100;
+        public static final double T_Spin_Mini_Single = 200;
+        public static final double T_Spin_no_lines = 400;
+        public static final double T_Spin_Single = 800;
+        public static final double T_Spin_Double = 1200;
+        public static final double T_Spin_Triple = 1600;
+        public static final double Combo = 50;
+        public static final double Hard_drop_per_cell = 2;
+        public static final double Sofr_drop_per_cell = 1;
     }
 
     public Table[][] mainTable = new Table[Window.AI_MainBoard.heightInt][Window.AI_MainBoard.widthInt];
     public GameState gameState = GameState.GAME_RESUME;
-    public long score = 0;
+    public double score = 0;
     public double PPS = 50;
     public int numOfUsedBlocks = 0;
 
@@ -78,9 +78,9 @@ public class AI_Tetris {
         Weight weight = new Weight();
 
         String filePath = "src/PlayData/PlayData.txt";
-        BufferedReader input = new BufferedReader(new FileReader(filePath));
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
         
-        String str = input.readLine();
+        String str = reader.readLine();
         int[] tempArray = new int[weight.numberOfWeight];
         for(int n = 0; n < weight.numberOfWeight; n++) {
             for(int i = 0; i < str.length(); i++) {
@@ -94,7 +94,7 @@ public class AI_Tetris {
                 }
             }
         }
-        input.close();
+        reader.close();
 
         weight.heightWeight = tempArray[0];
         weight.doMakeHoleWeight = tempArray[1];
@@ -118,8 +118,12 @@ public class AI_Tetris {
 
                 if(isGameOver()) {
                     gameState = GameState.GAME_OVER;
-                    Window.paint.repaint();
                     timer.cancel();
+                    System.out.println("System: Timer Canceld (isGameOver())" + gameState);
+                }
+                else if (gameState == GameState.GAME_OVER) {
+                    timer.cancel();
+                    System.out.println("System: Timer Canceld (Force Deactivate)");
                 }
                 else {
                     upload();
