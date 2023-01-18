@@ -21,7 +21,8 @@ public class Rule {
     public double getCost() {
         double resultCost = 0;
         resultCost += heightCost();
-        resultCost += doMakeHole();
+        resultCost += doMakeHoleCost();
+        resultCost += lineClearCost();
 
         return resultCost;
     }
@@ -39,8 +40,7 @@ public class Rule {
         }
         return cost;
     }
-
-    private double doMakeHole() {
+    private double doMakeHoleCost() {
         final double doMakeHole = weight.doMakeHoleWeight;
         int deepOfHole = 0;
         double cost = 0;
@@ -62,6 +62,19 @@ public class Rule {
             }
         }
 
+        return cost;
+    }
+    private double lineClearCost() {
+        final double[] lineClearWeight = weight.lineClearWeight;
+        double cost = 0;
+        int numOfFullLine = 0;
+        for(int r = 0; r < Main.Window.AI_MainBoard.heightInt; r++) {
+            if(ai.isLineFull(r)) numOfFullLine++;
+        }
+        if(numOfFullLine == 0) cost = 0;
+        else if (numOfFullLine == 1) cost = lineClearWeight[1];
+        else if (numOfFullLine == 2) cost = lineClearWeight[2];
+        else if (numOfFullLine == 3) cost = lineClearWeight[3];
         return cost;
     }
 

@@ -60,7 +60,6 @@ public class GA {
         try { 
             System.out.println("System: Start Saving");
             saveWeight(GAobjects.get(0)); 
-            System.out.println("System: Complete Saving");
         } catch (Exception e) { e.printStackTrace(); }
     }
 
@@ -70,11 +69,10 @@ public class GA {
             GAObject object = new GAObject();
             object.weight = SetWeight();
             AI.AI_Tetris ai = new AI.AI_Tetris(object.weight);
-            ai.PPS = 1000;
+            ai.PPS = 900;
             new Window(ai);
             System.out.println("StartGame(index: " + i + ")");
             ai.gameStart();
-            // System.out.println("Here");
             
             while(true) {
                 if(ai.gameState == GameState.GAME_OVER) {
@@ -87,7 +85,11 @@ public class GA {
                     break;
                 }
                 else {
-                    try { Thread.sleep(5); } catch (InterruptedException e) { e.printStackTrace(); }
+                    try { 
+                        Thread.sleep(5); 
+                    } catch (InterruptedException e) { 
+                        e.printStackTrace(); 
+                    }
                     continue;
                 }
             }
@@ -99,13 +101,29 @@ public class GA {
     static private void saveWeight(GAObject object) throws IOException {
         BufferedOutputStream output = null;
         try {
-              output = new BufferedOutputStream(new FileOutputStream("src/PlayData/PlayData.txt", false));
-            String str1 = "heightWeight: " + (int)object.weight.heightWeight + "\n";
-            String str2 = "doMakeHoleWeight: " + (int)object.weight.doMakeHoleWeight + "\n";
-            output.write(str1.getBytes()); // Byte형으로만 넣을 수 있음
-            output.write(str2.getBytes()); // Byte형으로만 넣을 수 있음
+            final String filePath = "src/PlayData/PlayData.txt";
+            output = new BufferedOutputStream(new FileOutputStream(filePath, false));
+            String[] str = new String[5];
+            
+            int i = 0;
+            str[i++] = "heightWeight: " + (int)object.weight.heightWeight + "\n";
+            str[i++] = "doMakeHoleWeight: " + (int)object.weight.doMakeHoleWeight + "\n";
+            str[i++] = "lineClearWeight[1]: " + (int)object.weight.lineClearWeight[0] + "\n";
+            str[i++] = "lineClearWeight[2]: " + (int)object.weight.lineClearWeight[1] + "\n";
+            str[i++] = "lineClearWeight[3]: " + (int)object.weight.lineClearWeight[2] + "\n";
+
+            for(i = 0; ;i++) {
+                try {
+                    output.write(str[i++].getBytes());
+                } catch (Exception e) {
+                    break;
+                }
+            }
+            System.out.println("System: Complete Saving");
         } catch (Exception e) {
-            e.getStackTrace();
+            System.out.println("System: Failed to save");
+            e.getCause();
+            e.printStackTrace();
         } finally {
             output.close();
         }
@@ -115,6 +133,8 @@ public class GA {
         Weight weight = new Weight();
         weight.heightWeight = randomInt(randomWeightFrom, randomWeightTo);
         weight.doMakeHoleWeight = randomInt(randomWeightFrom, randomWeightTo);;
+        for(int i = 0; i < 3; i++) 
+            weight.lineClearWeight[i] = randomInt(randomWeightFrom, randomWeightTo);;
         return weight;
     }
     static private int randomInt(int from, int to) {

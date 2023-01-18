@@ -1,2 +1,3 @@
-heightWeight: 10339
-doMakeHoleWeight: 50622
+heightWeight: 17110
+lineClearWeight[1]: 18620
+lineClearWeight[3]: 1404

@@ -26,26 +26,13 @@ public class AI_Tetris {
             position = new Position(0, 0);
         }
     }
-    public static class Score {
-        public static final double Single = 100;
-        public static final double Double = 300;
-        public static final double Triple = 500;
-        public static final double Tetris = 800;
-        public static final double T_Spin_Mini_no_lines = 100;
-        public static final double T_Spin_Mini_Single = 200;
-        public static final double T_Spin_no_lines = 400;
-        public static final double T_Spin_Single = 800;
-        public static final double T_Spin_Double = 1200;
-        public static final double T_Spin_Triple = 1600;
-        public static final double Combo = 50;
-        public static final double Hard_drop_per_cell = 2;
-        public static final double Sofr_drop_per_cell = 1;
-    }
 
     public Table[][] mainTable = new Table[Window.AI_MainBoard.heightInt][Window.AI_MainBoard.widthInt];
     public GameState gameState = GameState.GAME_RESUME;
     public double score = 0;
-    public double PPS = 50;
+    public double Att = 0; // the amount of Attacks
+    public double APM = 0; // Attacks Per Minute
+    public double PPS = 50; // Pieces Per Second
     public int numOfUsedBlocks = 0;
 
     protected CrntBlock crntBlock = new CrntBlock(this);
@@ -98,6 +85,9 @@ public class AI_Tetris {
 
         weight.heightWeight = tempArray[0];
         weight.doMakeHoleWeight = tempArray[1];
+        weight.lineClearWeight[0] = tempArray[2];
+        weight.lineClearWeight[1] = tempArray[3];
+        weight.lineClearWeight[2] = tempArray[4];
 
         return weight;
         } catch (Exception e) { e.getStackTrace(); return null; }
@@ -123,7 +113,7 @@ public class AI_Tetris {
                 }
                 else if (gameState == GameState.GAME_OVER) {
                     timer.cancel();
-                    System.out.println("System: Timer Canceld (Force Deactivate)");
+                    System.out.println("System: Timer Canceld (Forced Termination)");
                 }
                 else {
                     upload();
@@ -181,7 +171,7 @@ public class AI_Tetris {
         crntBlock.solidification();
         upload();
         numOfUsedBlocks++;
-        score += Score.Hard_drop_per_cell * (crntBlock.position.r - 1);
+        score += ScoreTable.Hard_drop_per_cell * (crntBlock.position.r - 1);
         lineClear();
 
         if(numOfUsedBlocks % NextBlock.BAG == 0) nextBlock.setNextArray();
@@ -238,10 +228,10 @@ public class AI_Tetris {
                 }
             }
         }
-        if(removedLine == 1) score += Score.Single;
-        else if(removedLine == 2) score += Score.Double;
-        else if(removedLine == 3) score += Score.Triple;
-        else if(removedLine == 4) score += Score.Tetris;
+        if(removedLine == 1) Clear_OneLine();
+        else if(removedLine == 2) Clear_TwoLines();
+        else if(removedLine == 3) Clear_ThreeLines();
+        else if(removedLine == 4) Clear_Tetris();
 
     }
     private void upload() {
@@ -254,7 +244,7 @@ public class AI_Tetris {
             }
         }
     }
-    private boolean isLineFull(int r) {
+    public boolean isLineFull(int r) {
         for(int c = 0; c < Main.Window.AI_MainBoard.widthInt; c++) {
             // 하나라도 블럭이 비었다면 return false
             if(mainTable[r][c].isVisible == false) return false; 
@@ -274,6 +264,29 @@ public class AI_Tetris {
         return false;
     }
     
+    private void Clear_OneLine() {
+        score += ScoreTable.Single;
+    }
+    private void Clear_TwoLines() {
+        score += ScoreTable.Double;
+    }
+    private void Clear_ThreeLines() {
+        score += ScoreTable.Triple;
+    }
+    private void Clear_Tetris() {
+        score += ScoreTable.Tetris;
+    }
+    private void Clear_T_Spin_Double() {
+        score += ScoreTable.T_Spin_Double;
+    }
+    private void Clear_T_Spin_Single() {
+        score += ScoreTable.T_Spin_Single;
+    }
+    private void Clear_T_Spin_Mini_Single() {
+        score += ScoreTable.T_Spin_Mini_Single;
+    }
+
+
     class costComparator implements Comparator<InformationBasedLocation> {
         public int compare(InformationBasedLocation cost1, InformationBasedLocation cost2) {
             if (cost1.cost > cost2.cost) {
